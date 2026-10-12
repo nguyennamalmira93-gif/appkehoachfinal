@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plan of Nam">
+<title>Plan of Nam</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);--tx:#f1f5f9;--mut:#94a3b8;--ac:#8b5cf6;--ok:#10b981;--bd:rgba(255,255,255,.15);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#0b0b1a;color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#bg{position:fixed;inset:0;background-size:cover;background-position:center;z-index:0}
+#bg:after{content:"";position:absolute;inset:0;background:rgba(5,5,20,.35)}
+#app{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:14px 14px 150px}
+.card{background:rgba(15,15,40,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--bd);border-radius:20px;padding:14px;margin-bottom:12px}
+h1{font-size:22px;margin:0}h2{font-size:15px;margin:0 0 10px;color:#c4b5fd}
+.mut{color:var(--mut);font-size:13px}
+.in{width:100%;background:rgba(255,255,255,.08);border:1px solid var(--bd);border-radius:12px;color:var(--tx);padding:11px 12px;font:inherit;font-size:15px;margin-bottom:8px}
+textarea.in{min-height:90px;resize:vertical}
+.btn{border:0;border-radius:14px;padding:11px 16px;font:inherit;font-weight:600;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6);transition:transform .12s}
+.btn:active{transform:scale(.94)}.btn.g{background:rgba(255,255,255,.1)}.btn.r{background:#dc2626}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.row>.fit{flex:none}
+.chips{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto}
+.chip{flex:none;padding:7px 13px;border-radius:99px;border:1px solid var(--bd);background:rgba(255,255,255,.06);color:var(--mut);font:inherit;font-size:13px}
+.chip.on{background:var(--ac);color:#fff;border-color:transparent}
+.warn{background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.5);border-radius:16px;padding:12px;margin-bottom:12px;font-size:14px}
+.br{display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center;font-size:12px;margin:6px 0}
+.tr{height:10px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden}.tr i{display:block;height:100%;border-radius:9px;transition:width .4s}
+.li{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px}
+.x{background:none;border:0;color:#f87171;font-size:18px;padding:4px 8px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tl{border-left:2px solid var(--ac);margin-left:6px;padding-left:14px}.tl>div{margin-bottom:12px;position:relative}
+.tl>div:before{content:"";position:absolute;left:-21px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--ok)}
+#nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(10,10,30,.8);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
+#sig{text-align:center;font-size:12px;letter-spacing:.18em;color:#c4b5fd;padding:6px 0 2px;font-style:italic}
+#tabs{display:flex;max-width:520px;margin:0 auto}
+#tabs button{flex:1;background:none;border:0;color:var(--mut);padding:7px 0 9px;font:inherit;font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:transform .12s}
+#tabs button:active{transform:scale(.9)}#tabs button.on{color:#a78bfa}
+.sw{height:44px;border-radius:12px;border:2px solid transparent}.sw.on{border-color:#fff}
+</style></head>
+<body><div id="bg"></div><div id="root"></div>
+<script>
+const {useState,useEffect}=React,html=htm.bind(React.createElement);
+const z=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());
+const pd=s=>{const[a,b,c]=s.split('-');return new Date(+a,+b-1,+c)};
+const add=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ds(d)};
+const mon=s=>add(s,-((pd(s).getDay()+6)%7));
+const inP=(d,sel,p)=>{if(p==='d')return d===sel;if(p==='w'){const m=mon(sel);return d>=m&&d<=add(m,6)}
+ const a=pd(d),b=pd(sel);if(a.getFullYear()!==b.getFullYear())return false;if(p==='y')return true;
+ if(p==='m')return a.getMonth()===b.getMonth();return Math.floor(a.getMonth()/3)===Math.floor(b.getMonth()/3)};
+const CUR={VND:'₫',LAK:'₭',THB:'฿',USD:'$'};
+const fmt=(n,c)=>Number(n).toLocaleString('vi-VN',{maximumFractionDigits:c==='USD'?2:0})+' '+CUR[c];
+const nf=s=>{s=String(s).replace(/[^\d.]/g,'');const[i,...r]=s.split('.');const ii=i?Number(i).toLocaleString('en-US'):(r.length?'0':'');return r.length?ii+'.'+r.join(''):ii};
+const pn=s=>parseFloat(String(s).replace(/,/g,''))||0;
+const Money=({v,f,...p})=>html`<input className="in" type="text" inputMode="numeric" autoComplete="off" value=${v} onChange=${e=>f(nf(e.target.value))} ...${p}/>`;
+const KEY='plan-of-nam-v1';
+const BGS=['linear-gradient(135deg,#1e1b4b,#4c1d95 55%,#064e3b)','linear-gradient(160deg,#0f172a,#312e81)','linear-gradient(135deg,#022c22,#134e4a,#1e1b4b)','linear-gradient(160deg,#2e1065,#701a75)','linear-gradient(135deg,#0c0a09,#292524,#44403c)','linear-gradient(160deg,#172554,#0e7490)'];
+const init=()=>({name:'Mr.Nam',bg:{t:'g',v:BGS[0]},start:ds(new Date()),tx:[],tasks:[],days:{}});
+const load=()=>{try{const r=localStorage.getItem(KEY);return r?{...init(),...JSON.parse(r)}:init()}catch(e){return init()}};
+const P={home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',fin:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',work:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',hp:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',rp:'<path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>',set:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'};
+const Ic=({d})=>html`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML=${{__html:P[d]}}/>`;
+const Chips=({o,v,f})=>html`<div className="chips">${o.map(([k,l])=>html`<button key=${k} className=${'chip'+(v===k?' on':'')} onClick=${()=>f(k)}>${l}</button>`)}</div>`;
+const PER=[['d','Ngày'],['w','Tuần'],['m','Tháng'],['q','Quý'],['y','Năm']];
+const sum=a=>a.reduce((s,x)=>s+x,0);
+const hh=m=>+(m/60).toFixed(1);
+const OT=({m})=>m>480?html`<span style=${{background:'#dc2626',color:'#fff',fontWeight:800,fontSize:12,padding:'4px 10px',borderRadius:99,boxShadow:'0 0 12px rgba(239,68,68,.7)',flex:'none',whiteSpace:'nowrap'}}>OT (+${hh(m-480)} giờ)</span>`:null;
+const STEPS=['Tư vấn báo giá','Vẽ mẫu 3D','Vẽ file tính ván','Đặt ván','Vẽ file cắt ván','Lắp đặt tại xưởng','Lắp đặt tại công trình','Nghiệm thu bàn giao','Đã xong'];
+const PST=[['plan','Sắp làm'],['doing','Đang làm'],['done','Đã làm']];
+
+function App(){
+ const[S,setS]=useState(load),[tab,setTab]=useState('home'),[,tick]=useState(0),[se,setSe]=useState(false);
+ const today=ds(new Date()),[date,setDate]=useState(today);
+ useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));setSe(false)}catch(e){setSe(true)}},[S]);
+ useEffect(()=>{const t=setInterval(()=>tick(x=>x+1),30000);return()=>clearInterval(t)},[]);
+ useEffect(()=>{const b=document.getElementById('bg');b.style.background=S.bg.t==='g'?S.bg.v:'url("'+S.bg.v+'") center/cover';},[S.bg]);
+ const up=f=>setS(f),day=S.days[date]||{},setDay=p=>up(s=>({...s,days:{...s.days,[date]:{...(s.days[date]||{}),...p}}}));
+ const yd=add(today,-1),yy=S.days[yd]||{},noP=!(yy.plan||'').trim(),noJ=!(yy.journal||'').trim();
+ const locked=yd>=S.start&&(noP||noJ),block=locked&&date>=today&&tab!=='set'&&tab!=='rp';
+ const h=new Date().getHours(),gr=h<11?'buổi sáng':h<14?'buổi trưa':h<18?'buổi chiều':'buổi tối';
+ const ctx={S,up,date,day,setDay,today,setDate};
+ const tabs=[['home','Tổng quan'],['fin','Tài chính'],['work','Công việc'],['hp','Sức khỏe'],['rp','Báo cáo'],['set','Cài đặt']];
+ return html`<div id="app">
+  <div style=${{marginBottom:12}}><div className="mut">Chúc ${gr} tốt lành</div><h1>Xin chào, ${S.name}!</h1></div>
+  ${se&&html`<div className="warn">⚠️ Không lưu được dữ liệu vào trình duyệt (bộ nhớ đầy hoặc đang ở chế độ riêng tư). Hãy dùng Cài đặt → Tạo bản sao lưu để giữ dữ liệu.</div>`}
+  ${tab!=='set'&&tab!=='rp'&&html`<div className="card row" style=${{padding:'8px 12px'}}>
+   <input className="in" style=${{margin:0}} type="date" value=${date} min=${today.slice(0,4)+'-01-01'} max=${today} onChange=${e=>e.target.value&&setDate(e.target.value)}/>
+   ${date!==today&&html`<button className="btn g fit" onClick=${()=>setDate(today)}>Hôm nay</button>`}</div>
+   ${date<today&&html`<div className="mut" style=${{margin:'-4px 4px 10px'}}>Đang bổ sung dữ liệu ngày ${date.split('-').reverse().join('/')}</div>`}`}
+  ${block?html`<div className="warn"><b>🔒 Đã khóa nhập liệu ngày mới</b><p>Ngày hôm qua (${yd.split('-').reverse().join('/')}) còn thiếu: ${[noP&&'kế hoạch',noJ&&'nhật ký'].filter(Boolean).join(' và ')}. Hãy hoàn thiện trước khi sang ngày mới.</p>
+   <button className="btn" onClick=${()=>{setDate(yd);setTab('home')}}>Điền ngày hôm qua</button></div>`
+  :tab==='home'?html`<${Home} ...${ctx}/>`:tab==='fin'?html`<${Fin} ...${ctx}/>`:tab==='work'?html`<${Work} ...${ctx}/>`:tab==='hp'?html`<${Health} ...${ctx}/>`:tab==='rp'?html`<${Report} S=${S}/>`:html`<${Settings} S=${S} up=${up}/>`}
+  <div id="nav"><div id="sig">Dev by N.Nam</div><div id="tabs">${tabs.map(([k,l])=>html`<button key=${k} className=${tab===k?'on':''} onClick=${()=>setTab(k)}><${Ic} d=${k}/>${l}</button>`)}</div></div>
+ </div>`;
+}
+
+function Cal({S,date,setDate,today}){
+ const[mo,setMo]=useState(date.slice(0,7)),[y,m]=mo.split('-').map(Number),off=(new Date(y,m-1,1).getDay()+6)%7,n=new Date(y,m,0).getDate(),y0=today.slice(0,4)+'-01-01';
+ const go=k=>{const x=new Date(y,m-1+k,1);setMo(x.getFullYear()+'-'+z(x.getMonth()+1))};
+ const dm={};S.tasks.forEach(t=>{dm[t.date]=(dm[t.date]||0)+(+t.min||0)});
+ const fin={};S.tx.forEach(t=>{fin[t.date]=1});(S.sal||[]).forEach(t=>{fin[t.date]=1});
+ const cells=[];for(let i=0;i<off;i++)cells.push(null);for(let d=1;d<=n;d++)cells.push(mo+'-'+z(d));
+ const ok=d=>{const v=S.days[d]||{};return !!((v.plan||'').trim()&&(v.journal||'').trim())};
+ const ds2=cells.filter(d=>d&&d<=today),full=ds2.filter(ok).length,miss=ds2.filter(d=>d<today&&d>=S.start&&!ok(d)).length,mh=sum(ds2.map(d=>dm[d]||0)),ot=sum(ds2.map(d=>Math.max(0,(dm[d]||0)-480)));
+ const dot=c=>html`<i style=${{width:6,height:6,borderRadius:'50%',background:c,display:'block'}}></i>`;
+ return html`<div className="card"><h2>Lịch xem lại</h2>
+  <div className="row" style=${{marginBottom:8}}><button className="btn g fit" onClick=${()=>go(-1)}>‹</button><b style=${{textAlign:'center'}}>Tháng ${z(m)}/${y}</b><button className="btn g fit" onClick=${()=>go(1)}>›</button></div>
+  <div style=${{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4}}>
+   ${['T2','T3','T4','T5','T6','T7','CN'].map(w=>html`<div key=${w} className="mut" style=${{textAlign:'center',fontSize:11}}>${w}</div>`)}
+   ${cells.map((d,i)=>{if(!d)return html`<div key=${'e'+i}></div>`;const v=S.days[d]||{},w=dm[d]||0,off2=d>today||d<y0,mis=d<today&&d>=S.start&&!ok(d);
+    return html`<button key=${d} disabled=${off2} onClick=${()=>setDate(d)} style=${{minHeight:50,borderRadius:10,color:'#fff',font:'inherit',fontSize:13,padding:'4px 0',display:'flex',flexDirection:'column',alignItems:'center',gap:4,opacity:off2?.3:1,
+     border:d===date?'2px solid #fff':d===today?'2px solid #8b5cf6':mis?'1px solid #f59e0b':'1px solid rgba(255,255,255,.1)',
+     background:w>480?'rgba(220,38,38,.4)':w>0?'rgba(16,185,129,.28)':'rgba(255,255,255,.05)'}}><b>${+d.slice(8)}</b>
+     <div style=${{display:'flex',gap:3,minHeight:6}}>${(v.plan||'').trim()?dot('#a78bfa'):null}${(v.journal||'').trim()?dot('#34d399'):null}${fin[d]?dot('#38bdf8'):null}</div>${w>0?html`<span style=${{fontSize:9,opacity:.9}}>${hh(w)}h</span>`:null}</button>`})}</div>
+  <div className="mut" style=${{marginTop:10,lineHeight:1.6}}>● <span style=${{color:'#a78bfa'}}>Kế hoạch</span> ● <span style=${{color:'#34d399'}}>Nhật ký</span> ● <span style=${{color:'#38bdf8'}}>Thu chi</span> · Nền xanh: có giờ làm · Nền đỏ: có OT · Viền cam: thiếu kế hoạch/nhật ký</div>
+  <div className="g2" style=${{marginTop:10}}><div><div className="mut">Ngày đủ dữ liệu</div><b>${full}/${ds2.length}</b></div><div><div className="mut">Ngày còn thiếu</div><b style=${{color:miss?'#fbbf24':'#34d399'}}>${miss}</b></div>
+   <div><div className="mut">Tổng giờ làm tháng</div><b>${hh(mh)}h</b></div><div><div className="mut">Tổng giờ OT</div><b style=${{color:ot?'#f87171':'inherit'}}>${hh(ot)}h</b></div></div></div>`;
+}
+
+function Review({S,date}){
+ const v=S.days[date]||{},tk=S.tasks.filter(t=>t.date===date),tx=S.tx.filter(t=>t.date===date),sl=(S.sal||[]).filter(t=>t.date===date),m=v.meals||{},tm=sum(tk.map(t=>+t.min||0));
+ const f=s=>+s.slice(0,2)*60+ +s.slice(3),hs=v.sleep&&v.wake?((f(v.wake)-f(v.sleep)+1440)%1440)/60:null;
+ const Sec=(t,c)=>html`<div style=${{marginBottom:12}}><div className="mut" style=${{marginBottom:3}}>${t}</div>${c}</div>`,no=html`<div className="mut">—</div>`;
+ const ml=[['b','Sáng'],['l','Trưa'],['d','Tối'],['s','Phụ']].filter(([k])=>(m[k]||'').trim());
+ return html`<div className="card"><h2>Xem lại ngày ${date.split('-').reverse().join('/')}</h2>
+  ${Sec('Kế hoạch',(v.plan||'').trim()?html`<div style=${{whiteSpace:'pre-wrap',fontSize:14}}>${v.plan}</div>`:no)}
+  ${Sec('Công việc ('+hh(tm)+' giờ)',tk.length?html`<div>${tk.map(t=>html`<div key=${t.id} style=${{fontSize:14}}>${t.done?'✅':'⬜'} ${(t.ses||'am')==='am'?'☀️':'🌤️'} ${t.title} - ${hh(t.min||0)} giờ</div>`)}<div style=${{marginTop:4}}><${OT} m=${tm}/></div></div>`:no)}
+  ${Sec('Thu chi',tx.length+sl.length?html`<div>${tx.map(t=>html`<div key=${t.id} style=${{fontSize:14}}>${t.cat}: <b style=${{color:t.type==='out'||t.type==='cvo'?'#f87171':'#34d399'}}>${t.type==='out'||t.type==='cvo'?'-':'+'}${fmt(t.amt,t.cur)}</b> <span className="mut">${t.note||''}</span></div>`)}${sl.map(t=>html`<div key=${t.id} style=${{fontSize:14}}>Lương kỳ ${t.period.slice(5)}/${t.period.slice(0,4)}: <b style=${{color:'#34d399'}}>+${fmt(t.amt,t.cur)}</b></div>`)}</div>`:no)}
+  ${Sec('Giấc ngủ',v.sleep||v.wake?html`<div style=${{fontSize:14}}>${v.sleep||'--'} → ${v.wake||'--'}${hs!=null?' ('+hs.toFixed(1)+' giờ)':''}</div>`:no)}
+  ${Sec('Bữa ăn',ml.length?html`<div>${ml.map(([k,l])=>html`<div key=${k} style=${{fontSize:14}}>${l}: ${m[k]}</div>`)}</div>`:no)}
+  ${Sec('Nhật ký',(v.journal||'').trim()?html`<div style=${{whiteSpace:'pre-wrap',fontSize:14}}>${v.journal}</div>`:no)}</div>`;
+}
+
+function Home({S,date,day,setDay,today,setDate}){
+ const h=new Date().getHours(),isT=date===today;
+ const tk=S.tasks.filter(t=>t.date===date),dn=tk.filter(t=>t.done).length;
+ let sl=null;if(day.sleep&&day.wake){const f=s=>+s.slice(0,2)*60+ +s.slice(3);sl=((f(day.wake)-f(day.sleep)+1440)%1440)/60}
+ return html`<div>
+  ${isT&&h<12&&!(day.plan||'').trim()&&html`<div className="warn">☀️ Buổi sáng rồi! Hãy nhập kế hoạch làm việc cho hôm nay.</div>`}
+  ${isT&&h>=19&&!(day.journal||'').trim()&&html`<div className="warn">🌙 Bạn chưa viết nhật ký / tổng kết hôm nay. Dành vài phút nhé!</div>`}
+  <${Cal} S=${S} date=${date} setDate=${setDate} today=${today}/>
+  <div className="card"><h2>Kế hoạch trong ngày</h2><textarea className="in" placeholder="Hôm nay mình sẽ làm gì?" value=${day.plan||''} onChange=${e=>setDay({plan:e.target.value})}/></div>
+  <div className="card"><h2>Tóm tắt ngày</h2><div className="g2">
+   <div><div className="mut">Công việc xong</div><b style=${{fontSize:22}}>${dn}/${tk.length}</b></div>
+   <div><div className="mut">Giờ làm việc</div><b style=${{fontSize:22}}>${hh(sum(tk.map(t=>+t.min||0)))}h</b> <${OT} m=${sum(tk.map(t=>+t.min||0))}/></div>
+   <div><div className="mut">Giờ ngủ</div><b style=${{fontSize:22}}>${sl==null?'--':sl.toFixed(1)+'h'}</b></div>
+   <div><div className="mut">Nhật ký</div><b style=${{fontSize:22}}>${(day.journal||'').trim()?'✓ Đã viết':'Chưa'}</b></div></div></div><${Review} S=${S} date=${date}/></div>`;
+}
+
+function Fin({S,up,date}){
+ const[p,setP]=useState('m'),[cc,setCc]=useState('VND'),[mg,setMg]=useState(false),[sv,setSv]=useState('tx'),[f,setF]=useState({type:'out',cur:'VND',amt:'',cat:'Ăn uống',note:'',cur2:'USD',amt2:''});
+ const set=k=>e=>setF({...f,[k]:e.target.value});
+ const cats=f.type==='in'?['Lương','Thưởng','Kinh doanh','Khác']:['Ăn uống','Di chuyển','Mua sắm','Hóa đơn','Giải trí','Khác'];
+ const addTx=()=>{const a=pn(f.amt);if(!(a>0))return;const id=Date.now(),b={date,note:f.note,at:new Date().toISOString()};
+  if(f.type==='cv'){const a2=pn(f.amt2);if(!(a2>0))return;up(s=>({...s,tx:[...s.tx,{...b,id,type:'cvo',cur:f.cur,amt:a,cat:'Quy đổi → '+f.cur2},{...b,id:id+1,type:'cvi',cur:f.cur2,amt:a2,cat:'Quy đổi ← '+f.cur}]}))}
+  else up(s=>({...s,tx:[...s.tx,{...b,id,type:f.type,cur:f.cur,amt:a,cat:f.cat}]}));setF({...f,amt:'',amt2:'',note:''})};
+ const L=S.tx.filter(t=>inP(t.date,date,p)).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ const SL=(S.sal||[]).filter(t=>inP(t.date,date,p));const tot=(c,ty)=>sum(L.filter(t=>t.cur===c&&t.type===ty).map(t=>t.amt))+(mg&&ty==='in'?sum(SL.filter(t=>t.cur===c).map(t=>t.amt)):0);
+ const I=tot(cc,'in'),O=tot(cc,'out'),mx=Math.max(I,O),ex=L.filter(t=>t.cur===cc&&t.type==='out'),cm={};
+ ex.forEach(t=>cm[t.cat]=(cm[t.cat]||0)+t.amt);const cl=Object.entries(cm).sort((a,b)=>b[1]-a[1]),cmx=cl[0]?cl[0][1]:0,tE=sum(ex.map(t=>t.amt));
+ const bar=(l,v,m,col,s)=>html`<div className="br"><span>${l}</span><div className="tr"><i style=${{width:(m?v/m*100:0)+'%',background:col}}></i></div><b>${s}</b></div>`;
+ return html`<div>
+  <${Chips} o=${[['tx','Thu chi'],['sal','Nhận lương']]} v=${sv} f=${setSv}/>${sv==='sal'?html`<${Salary} S=${S} up=${up} date=${date}/>`:html`<div><div className="card"><h2>Thêm giao dịch (${date.split('-').reverse().join('/')})</h2>
+   <${Chips} o=${[['out','Chi tiêu'],['in','Thu nhập'],['cv','Quy đổi']]} v=${f.type} f=${t=>setF({...f,type:t,cat:t==='in'?'Lương':'Ăn uống'})}/>
+   <div className="row"><${Money} placeholder="Số tiền" v=${f.amt} f=${x=>setF({...f,amt:x})}/>
+   <select className="in fit" style=${{width:90}} value=${f.cur} onChange=${set('cur')}>${Object.keys(CUR).map(c=>html`<option key=${c}>${c}</option>`)}</select></div>
+   ${f.type==='cv'?html`<div className="row"><${Money} placeholder="Số tiền nhận được" v=${f.amt2} f=${x=>setF({...f,amt2:x})}/>
+   <select className="in fit" style=${{width:90}} value=${f.cur2} onChange=${set('cur2')}>${Object.keys(CUR).map(c=>html`<option key=${c}>${c}</option>`)}</select></div>`
+   :html`<select className="in" value=${f.cat} onChange=${set('cat')}>${cats.map(c=>html`<option key=${c}>${c}</option>`)}</select>`}
+   <input className="in" placeholder="Ghi chú" value=${f.note} onChange=${set('note')}/>
+   <button className="btn" style=${{width:'100%'}} onClick=${addTx}>＋ Lưu giao dịch</button></div>
+  <div className="card"><h2>Thống kê</h2><${Chips} o=${PER} v=${p} f=${setP}/><${Chips} o=${[[0,'Thu chi (không gồm lương)'],[1,'Gộp cả lương']]} v=${mg?1:0} f=${k=>setMg(!!k)}/>
+   <div className="g2">${Object.keys(CUR).map(c=>html`<div key=${c} className="card" style=${{margin:0,padding:10}}><b>${c}</b>
+    <div style=${{color:'#34d399',fontSize:13}}>Thu ${fmt(tot(c,'in'),c)}</div><div style=${{color:'#f87171',fontSize:13}}>Chi ${fmt(tot(c,'out'),c)}</div>
+    <div className="mut">Dư ${fmt(tot(c,'in')-tot(c,'out'),c)}</div></div>`)}</div></div>
+  <div className="card"><h2>Biểu đồ</h2><${Chips} o=${Object.keys(CUR).map(c=>[c,c])} v=${cc} f=${setCc}/>
+   ${bar('Thu nhập',I,mx,'#10b981',fmt(I,cc))}${bar('Chi tiêu',O,mx,'#f43f5e',fmt(O,cc))}
+   <div className="mut" style=${{margin:'12px 0 2px'}}>Tỷ trọng chi tiêu theo danh mục</div>
+   ${cl.length?cl.map(([k,v])=>bar(k,v,cmx,'#8b5cf6',Math.round(v/tE*100)+'%')):html`<div className="mut">Chưa có khoản chi.</div>`}</div>
+  <div className="card"><h2>Giao dịch</h2>${L.length?L.slice(0,40).map(t=>html`<div className="li" key=${t.id}><div style=${{flex:1}}><div>${t.cat}</div><div className="mut">${t.date.split('-').reverse().join('/')} ${t.note||''}</div></div>
+   <b style=${{color:t.type==='out'||t.type==='cvo'?'#f87171':'#34d399'}}>${t.type==='out'||t.type==='cvo'?'-':'+'}${fmt(t.amt,t.cur)}</b>
+   <button className="x" onClick=${()=>up(s=>({...s,tx:s.tx.filter(x=>x.id!==t.id)}))}>×</button></div>`):html`<div className="mut">Chưa có giao dịch.</div>`}</div></div>`}</div>`;
+}
+
+function Salary({S,up,date}){
+ const[f,setF]=useState({date,period:date.slice(0,7),amt:'',cur:'VND',note:''}),[v,setV]=useState('m'),[msg,setMsg]=useState(''),[yr,setYr]=useState(date.slice(0,4));
+ const set=k=>e=>setF({...f,[k]:e.target.value});
+ const addS=()=>{const a=pn(f.amt);if(!(a>0)){setMsg('⚠️ Hãy nhập số tiền lớn hơn 0.');return}if(!/^\d{4}-\d{2}$/.test(f.period)||!f.date){setMsg('⚠️ Hãy chọn đủ ngày nhận và kỳ lương.');return}up(s=>({...s,sal:[...(s.sal||[]),{...f,id:Date.now(),at:new Date().toISOString(),amt:a}]}));setYr(f.period.slice(0,4));setMsg('✅ Đã lưu lương kỳ '+f.period.slice(5)+'/'+f.period.slice(0,4));setF({...f,amt:'',note:''})};
+ const A=(S.sal||[]).slice().sort((a,b)=>b.period.localeCompare(a.period)||b.id-a.id),ys=[...new Set([...A.map(t=>t.period.slice(0,4)),date.slice(0,4),yr])].sort().reverse();
+ const g={};A.filter(t=>v==='y'||t.period.startsWith(yr)).forEach(t=>{const k=v==='m'?t.period:t.period.slice(0,4);(g[k]=g[k]||{})[t.cur]=((g[k]||{})[t.cur]||0)+t.amt});
+ const oth=(k,c)=>sum(S.tx.filter(t=>t.type==='in'&&t.cur===c&&t.date.startsWith(k)).map(t=>t.amt));
+ const lb=k=>k.length===7?'Tháng '+k.slice(5)+'/'+k.slice(0,4):'Năm '+k;
+ return html`<div>
+  <div className="card"><h2>Ghi nhận lương</h2>
+   <div className="row"><div><div className="mut">Ngày nhận</div><input className="in" type="date" value=${f.date} onChange=${set('date')}/></div>
+   <div><div className="mut">Kỳ lương (tháng/năm)</div><div className="row"><select className="in" value=${f.period.slice(5,7)} onChange=${e=>setF({...f,period:f.period.slice(0,4)+'-'+e.target.value})}>${Array.from({length:12},(_,i)=>z(i+1)).map(x=>html`<option key=${x} value=${x}>T${+x}</option>`)}</select><select className="in" value=${f.period.slice(0,4)} onChange=${e=>setF({...f,period:e.target.value+'-'+f.period.slice(5,7)})}>${Array.from({length:9},(_,i)=>String(new Date().getFullYear()-6+i)).map(x=>html`<option key=${x}>${x}</option>`)}</select></div></div></div>
+   <div className="row"><${Money} placeholder="Số tiền nhận" v=${f.amt} f=${x=>setF({...f,amt:x})}/>
+   <select className="in fit" style=${{width:90}} value=${f.cur} onChange=${set('cur')}>${Object.keys(CUR).map(c=>html`<option key=${c}>${c}</option>`)}</select></div>
+   <input className="in" placeholder="Ghi chú (vd: Lương tháng 10, thưởng...)" value=${f.note} onChange=${set('note')}/>
+   <button className="btn" style=${{width:'100%'}} onClick=${addS}>＋ Lưu khoản lương</button>${msg&&html`<div style=${{marginTop:8,fontSize:13}}>${msg}</div>`}</div>
+  <div className="card"><h2>Thống kê lương & đối soát</h2><${Chips} o=${[['m','Theo tháng'],['y','Theo năm']]} v=${v} f=${setV}/>${v==='m'&&html`<select className="in" value=${yr} onChange=${e=>setYr(e.target.value)}>${ys.map(x=>html`<option key=${x} value=${x}>Năm ${x}</option>`)}</select>`}
+   ${Object.keys(g).length?Object.keys(g).sort().reverse().map(k=>html`<div key=${k} className="li" style=${{display:'block'}}><b>${lb(k)}</b>
+    ${Object.keys(g[k]).map(c=>html`<div key=${c} style=${{fontSize:13,marginTop:3}}><span style=${{color:'#a78bfa'}}>Lương ${fmt(g[k][c],c)}</span> · <span className="mut">Thu khác ${fmt(oth(k,c),c)}</span> · <b>Tổng ${fmt(g[k][c]+oth(k,c),c)}</b></div>`)}</div>`):html`<div className="mut">Chưa có dữ liệu lương.</div>`}</div>
+  <div className="card"><h2>Lịch sử nhận lương</h2>${A.length?A.slice(0,40).map(t=>html`<div className="li" key=${t.id}><div style=${{flex:1}}><div>Kỳ ${t.period.slice(5)}/${t.period.slice(0,4)}</div><div className="mut">Nhận ${t.date.split('-').reverse().join('/')} ${t.note||''}</div></div><b style=${{color:'#34d399'}}>+${fmt(t.amt,t.cur)}</b><button className="x" onClick=${()=>up(s=>({...s,sal:s.sal.filter(x=>x.id!==t.id)}))}>×</button></div>`):html`<div className="mut">Chưa ghi nhận khoản nào.</div>`}</div></div>`;
+}
+
+function Projects({S,up}){
+ const[sf,setSf]=useState('doing'),[n,setN]=useState(''),[c,setC]=useState(''),[ns,setNs]=useState('plan'),[open,setOpen]=useState(null),[w,setW]=useState(''),[ct,setCt]=useState(''),[mt,setMt]=useState(''),[cu,setCu]=useState('VND');
+ const L=S.projects||[],tt={};L.filter(p=>p.status===sf).forEach(p=>{const k=p.cur||'VND';tt[k]=tt[k]||{h:0,m:0};tt[k].h+=p.contract||0;tt[k].m+=p.mat||0});
+ const upd=(id,fn)=>up(s=>({...s,projects:(s.projects||[]).map(p=>p.id===id?fn(p):p)}));
+ const tog=(id,i)=>upd(id,p=>{const st=Array.from({length:9},(_,j)=>!!(p.steps||[])[j]);st[i]=!st[i];const k=st.filter(Boolean).length;return{...p,steps:st,status:k===9?'done':(k>0&&p.status==='plan')||(p.status==='done'&&k<9)?'doing':p.status}});
+ const addP=()=>{if(!n.trim())return;up(s=>({...s,projects:[...(s.projects||[]),{id:Date.now(),name:n.trim(),client:c.trim(),item:w.trim(),cur:cu,contract:pn(ct),mat:pn(mt),status:ns,steps:Array(9).fill(false)}]}));setSf(ns);setN('');setC('');setW('');setCt('');setMt('')};
+ return html`<div>
+  <div className="card"><h2>Thêm công trình nội thất</h2>
+   <input className="in" placeholder="Tên công trình" value=${n} onChange=${e=>setN(e.target.value)}/>
+   <input className="in" placeholder="Khách hàng / địa chỉ" value=${c} onChange=${e=>setC(e.target.value)}/>
+   <input className="in" placeholder="Hạng mục thi công (vd: tủ bếp, tủ áo, vách TV)" value=${w} onChange=${e=>setW(e.target.value)}/>
+   <div className="row"><${Money} placeholder="Giá trị hợp đồng" v=${ct} f=${setCt}/><select className="in fit" style=${{width:90}} value=${cu} onChange=${e=>setCu(e.target.value)}>${Object.keys(CUR).map(x=>html`<option key=${x}>${x}</option>`)}</select></div>
+   <${Money} placeholder="Giá trị nhập vật liệu" v=${mt} f=${setMt}/>
+   <${Chips} o=${PST} v=${ns} f=${setNs}/>
+   <button className="btn" style=${{width:'100%'}} onClick=${addP}>＋ Thêm công trình</button></div>
+  <${Chips} o=${PST.map(([k,l])=>[k,l+' ('+L.filter(p=>p.status===k).length+')'])} v=${sf} f=${setSf}/>
+  ${Object.keys(tt).length>0&&html`<div className="card"><h2>Tổng hợp nhóm "${(PST.find(x=>x[0]===sf)||[])[1]}"</h2>${Object.keys(tt).map(k=>html`<div key=${k} style=${{fontSize:13,marginTop:3}}>Hợp đồng <b>${fmt(tt[k].h,k)}</b> · Vật liệu <b style=${{color:'#fbbf24'}}>${fmt(tt[k].m,k)}</b> · Còn lại <b style=${{color:tt[k].h-tt[k].m<0?'#f87171':'#34d399'}}>${fmt(tt[k].h-tt[k].m,k)}</b></div>`)}</div>`}
+  ${L.filter(p=>p.status===sf).map(p=>{const k=(p.steps||[]).filter(Boolean).length,pc=Math.round(k/9*100),nx=STEPS.find((_,i)=>!(p.steps||[])[i]);return html`<div className="card" key=${p.id}>
+   <div className="row"><div onClick=${()=>setOpen(open===p.id?null:p.id)}><b>${p.name}</b><div className="mut">${p.client||'—'}</div></div><button className="x fit" onClick=${()=>up(s=>({...s,projects:s.projects.filter(x=>x.id!==p.id)}))}>×</button></div>
+   <div className="tr" style=${{margin:'10px 0 4px'}}><i style=${{width:pc+'%',background:pc===100?'#10b981':'#8b5cf6'}}></i></div>
+   <div className="mut">${pc}% · ${k}/9 bước${nx?' · Tiếp theo: '+nx:' · Hoàn tất'}</div>
+   <div style=${{marginTop:8,fontSize:13}}>${p.item?html`<div className="mut">Hạng mục: ${p.item}</div>`:null}<div>Hợp đồng: <b>${fmt(p.contract||0,p.cur||'VND')}</b></div><div>Nhập vật liệu: <b style=${{color:'#fbbf24'}}>${fmt(p.mat||0,p.cur||'VND')}</b> <span className="mut">(${p.contract?Math.round((p.mat||0)/p.contract*100):0}% hợp đồng)</span></div><div>Còn lại: <b style=${{color:(p.contract||0)-(p.mat||0)<0?'#f87171':'#34d399'}}>${fmt((p.contract||0)-(p.mat||0),p.cur||'VND')}</b></div></div>
+   <div style=${{marginTop:8}}><${Chips} o=${PST} v=${p.status} f=${s=>upd(p.id,q=>({...q,status:s}))}/></div>
+   <button className="btn g" style=${{width:'100%'}} onClick=${()=>setOpen(open===p.id?null:p.id)}>${open===p.id?'Thu gọn tiến độ':'Cập nhật tiến độ'}</button>
+   ${open===p.id&&html`<div style=${{marginTop:10}}><div className="mut">Hạng mục thi công</div><input className="in" value=${p.item||''} onChange=${e=>{const v=e.target.value;upd(p.id,q=>({...q,item:v}))}}/><div className="row"><div><div className="mut">Giá trị hợp đồng</div><${Money} v=${p.contract?nf(p.contract):''} f=${x=>upd(p.id,q=>({...q,contract:pn(x)}))}/></div><div><div className="mut">Nhập vật liệu</div><${Money} v=${p.mat?nf(p.mat):''} f=${x=>upd(p.id,q=>({...q,mat:pn(x)}))}/></div></div></div>`}
+   ${open===p.id&&STEPS.map((s,i)=>html`<label className="li" key=${i}><input type="checkbox" style=${{width:22,height:22,flex:'none'}} checked=${!!(p.steps||[])[i]} onChange=${()=>tog(p.id,i)}/><span style=${{opacity:(p.steps||[])[i]?.6:1,textDecoration:(p.steps||[])[i]?'line-through':'none'}}>${i+1}. ${s}</span></label>`)}</div>`})}
+  ${!L.some(p=>p.status===sf)&&html`<div className="mut" style=${{textAlign:'center'}}>Chưa có công trình trong nhóm này.</div>`}</div>`;
+}
+
+function Work(p){const[v,setV]=useState('t');return html`<div><${Chips} o=${[['t','Công việc & giờ'],['p','Công trình']]} v=${v} f=${setV}/>${v==='t'?html`<${Tasks} ...${p}/>`:html`<${Projects} S=${p.S} up=${p.up}/>`}</div>`}
+
+function Tasks({S,up,date}){
+ const[sc,setSc]=useState('d'),[ses,setSes]=useState('am'),[ap,setAp]=useState('d'),[f,setF]=useState({title:'',h:'',m:''});
+ const addT=()=>{if(!f.title.trim())return;up(s=>({...s,tasks:[...s.tasks,{id:Date.now(),date,title:f.title.trim(),scope:sc,ses,at:new Date().toISOString(),min:(+f.h||0)*60+(+f.m||0),done:false}]}));setF({title:'',h:'',m:''})};
+ const upd=(id,p)=>up(s=>({...s,tasks:s.tasks.map(t=>t.id===id?{...t,...p}:t)}));
+ const L=S.tasks.filter(t=>t.scope===sc&&inP(t.date,date,sc));
+ const TG={d:480,w:2400,m:10560},tg=TG[sc],pm=sum(L.map(t=>+t.min||0)),dmn=sum(L.filter(t=>t.done).map(t=>+t.min||0));
+ const dm={};S.tasks.forEach(t=>{dm[t.date]=(dm[t.date]||0)+(+t.min||0)});const td=dm[date]||0;
+ const am=sum(S.tasks.filter(t=>t.date===date&&(t.ses||'am')==='am').map(t=>+t.min||0));
+ const ca={};S.tasks.filter(t=>inP(t.date,date,ap)&&t.min>0).forEach(t=>{const k=t.title.trim().toLowerCase();(ca[k]=ca[k]||{n:t.title.trim(),m:0}).m+=+t.min});
+ const cl=Object.values(ca).sort((a,b)=>b.m-a.m),ct=sum(cl.map(x=>x.m)),COL=['#8b5cf6','#10b981','#f59e0b','#06b6d4','#f43f5e','#6366f1','#84cc16','#ec4899'];
+ const st=p=>{let s=0,o=0;for(const d in dm)if(inP(d,date,p)){s+=Math.min(dm[d],480);o+=Math.max(0,dm[d]-480)}const a=S.tasks.filter(t=>inP(t.date,date,p));return[s,o,a.length?Math.round(a.filter(t=>t.done).length/a.length*100):0]};
+ return html`<div>
+  <div className="card"><h2>Giờ làm trong ngày (chuẩn 8 giờ)</h2><div className="row"><b style=${{fontSize:22}}>Tổng ${hh(td)} / 8 giờ</b><${OT} m=${td}/></div><div className="mut" style=${{marginTop:6}}>☀️ Sáng ${hh(am)} giờ + 🌤️ Chiều ${hh(td-am)} giờ</div><div className="tr" style=${{marginTop:8}}><i style=${{width:Math.min(100,td/4.8)+'%',background:td>480?'#ef4444':'#10b981'}}></i></div></div>
+  <div className="card"><h2>Thống kê giờ chuẩn & OT</h2><div className="g2">
+   ${[['d','Ngày'],['w','Tuần'],['m','Tháng'],['y','Năm']].map(([k,l])=>{const[s,o,r]=st(k);return html`<div key=${k}><div className="mut">${l}</div><b style=${{fontSize:16}}>Chuẩn ${hh(s)}h</b><div style=${{color:o?'#f87171':'#94a3b8',fontWeight:o?700:400,fontSize:13}}>OT ${hh(o)}h</div><div className="tr" style=${{margin:'4px 0'}}><i style=${{width:r+'%',background:'#10b981'}}></i></div><div className="mut">${r}% xong</div></div>`})}</div></div>
+  <div className="card"><h2>Phân bổ thời gian công việc</h2><${Chips} o=${[['d','Ngày'],['w','Tuần'],['m','Tháng']]} v=${ap} f=${setAp}/>
+   ${cl.length?html`<div className="mut" style=${{marginBottom:6}}>Tổng ${hh(ct)} giờ</div>`:null}
+   ${cl.length?cl.map((x,i)=>html`<div key=${x.n} style=${{margin:'8px 0'}}><div className="row"><span style=${{fontSize:13}}>${x.n} - ${hh(x.m)} giờ</span><b style=${{textAlign:'right',fontSize:13}}>${Math.round(x.m/ct*100)}%</b></div><div className="tr"><i style=${{width:(x.m/ct*100)+'%',background:COL[i%8]}}></i></div></div>`):html`<div className="mut">Chưa có thời lượng để thống kê.</div>`}</div>
+  <div className="card"><h2>Kế hoạch</h2><${Chips} o=${[['d','Theo ngày'],['w','Theo tuần'],['m','Theo tháng']]} v=${sc} f=${setSc}/><${Chips} o=${[['am','☀️ Buổi sáng'],['pm','🌤️ Buổi chiều']]} v=${ses} f=${setSes}/>
+   <div className="mut" style=${{marginBottom:6}}>Mốc 100% = ${hh(tg)} giờ (${sc==='d'?'8 giờ/ngày':sc==='w'?'40 giờ/tuần':'176 giờ/tháng'})</div>
+   ${[['Thời gian kế hoạch',pm,'#8b5cf6'],['Đã hoàn thành',dmn,'#10b981']].map(([l,m,cl])=>html`<div key=${l} style=${{margin:'6px 0 10px'}}><div className="row"><span className="mut">${l}: ${hh(m)}/${hh(tg)} giờ</span><b style=${{textAlign:'right',fontSize:14,color:m>tg?'#f87171':'#fff'}}>${Math.round(m/tg*100)}%</b></div><div className="tr"><i style=${{width:Math.min(100,m/tg*100)+'%',background:m>tg?'#ef4444':cl}}></i></div></div>`)}
+   <div className="row"><input className="in" placeholder="Công việc mới" value=${f.title} onChange=${e=>setF({...f,title:e.target.value})}/>
+   <input className="in fit" style=${{width:56}} type="number" inputMode="numeric" placeholder="Giờ" value=${f.h} onChange=${e=>setF({...f,h:e.target.value})}/><input className="in fit" style=${{width:56}} type="number" inputMode="numeric" placeholder="Phút" value=${f.m} onChange=${e=>setF({...f,m:e.target.value})}/></div>
+   <button className="btn" style=${{width:'100%',marginBottom:8}} onClick=${addT}>＋ Thêm công việc</button>
+   ${[['am','☀️ Buổi sáng'],['pm','🌤️ Buổi chiều']].map(([k,l])=>{const A=L.filter(t=>(t.ses||'am')===k);return html`<div key=${k} style=${{marginTop:12}}><div className="row"><b>${l}</b><span className="mut" style=${{textAlign:'right'}}>${hh(sum(A.map(t=>t.min||0)))} giờ</span></div>
+    ${A.length?A.map(t=>html`<div className="li" key=${t.id}><input type="checkbox" style=${{width:22,height:22,flex:'none'}} checked=${t.done} onChange=${()=>upd(t.id,{done:!t.done})}/>
+     <span style=${{flex:1,textDecoration:t.done?'line-through':'none',opacity:t.done?.6:1}}>${t.title} - <b>${hh(t.min||0)} giờ</b> <span className="mut">· ${Math.round((t.min||0)/tg*100)}% · ${t.date.split('-').reverse().join('/')}</span></span>
+     <input className="in" style=${{width:48,margin:0,padding:'6px'}} type="number" inputMode="numeric" placeholder="g" value=${Math.floor((t.min||0)/60)} onChange=${e=>upd(t.id,{min:(+e.target.value||0)*60+(t.min||0)%60})}/>
+     <input className="in" style=${{width:48,margin:0,padding:'6px'}} type="number" inputMode="numeric" placeholder="p" value=${z((t.min||0)%60)} onChange=${e=>upd(t.id,{min:Math.floor((t.min||0)/60)*60+(+e.target.value||0)})}/>
+     <button className="x" onClick=${()=>up(s=>({...s,tasks:s.tasks.filter(x=>x.id!==t.id)}))}>×</button></div>`):html`<div className="mut">Chưa có công việc.</div>`}</div>`})}</div></div>`;
+}
+
+function Health({S,date,day,setDay}){
+ const meals=day.meals||{},f=s=>+s.slice(0,2)*60+ +s.slice(3);
+ const sl=day.sleep&&day.wake?((f(day.wake)-f(day.sleep)+1440)%1440)/60:null;
+ const tl=Object.entries(S.days).filter(([k,v])=>(v.journal||'').trim()).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,15);
+ return html`<div>
+  <div className="card"><h2>Giấc ngủ</h2><div className="row"><div><div className="mut">Đi ngủ</div><input className="in" type="time" value=${day.sleep||''} onChange=${e=>setDay({sleep:e.target.value})}/></div>
+   <div><div className="mut">Thức dậy</div><input className="in" type="time" value=${day.wake||''} onChange=${e=>setDay({wake:e.target.value})}/></div></div>
+   <b>Tổng: ${sl==null?'--':sl.toFixed(1)+' giờ'}</b></div>
+  <div className="card"><h2>Ăn uống</h2>${[['b','Bữa sáng'],['l','Bữa trưa'],['d','Bữa tối'],['s','Bữa phụ']].map(([k,l])=>html`<input key=${k} className="in" placeholder=${l} value=${meals[k]||''} onChange=${e=>setDay({meals:{...meals,[k]:e.target.value}})}/>`)}</div>
+  <div className="card"><h2>Nhật ký</h2><textarea className="in" style=${{minHeight:120}} placeholder="Suy nghĩ, cảm xúc, bài học hôm nay..." value=${day.journal||''} onChange=${e=>setDay({journal:e.target.value})}/></div>
+  <div className="card"><h2>Dòng thời gian</h2><div className="tl">${tl.length?tl.map(([k,v])=>html`<div key=${k}><div className="mut">${k.split('-').reverse().join('/')}</div><div style=${{whiteSpace:'pre-wrap',fontSize:14}}>${v.journal}</div></div>`):html`<div className="mut">Chưa có nhật ký.</div>`}</div></div></div>`;
+}
+
+function Report({S}){
+ const[v,setV]=useState('m'),SA=S.sal||[];
+ const ys=[...new Set(SA.map(t=>t.date.slice(0,4)).concat(ds(new Date()).slice(0,4)))].sort().reverse(),[yr,setYr]=useState(ys[0]);
+ const inY=d=>v==='y'||d.slice(0,4)===yr,key=d=>v==='w'?mon(d):v==='m'?d.slice(0,7):d.slice(0,4),fd=d=>d.split('-').reverse().join('/');
+ const R={},T={};
+ SA.forEach(t=>{if(!inY(t.date))return;const k=key(t.date),r=R[k]||(R[k]={}),c=r[t.cur]||(r[t.cur]={s:0,n:0}),y=T[t.cur]||(T[t.cur]={s:0,n:0});c.s+=t.amt;c.n++;y.s+=t.amt;y.n++});
+ const ks=Object.keys(R).sort().reverse();
+ const line=(c,x)=>html`<div key=${c} style=${{fontSize:14,marginTop:4}}><b>${c}</b>: <b style=${{color:'#a78bfa'}}>${fmt(x.s,c)}</b> <span className="mut">(${x.n} lần nhận)</span></div>`;
+ return html`<div>
+  <${Chips} o=${[['w','Theo tuần'],['m','Theo tháng'],['y','Theo năm']]} v=${v} f=${setV}/>
+  ${v!=='y'&&html`<select className="in" value=${yr} onChange=${e=>setYr(e.target.value)}>${ys.map(x=>html`<option key=${x} value=${x}>Năm ${x}</option>`)}</select>`}
+  <div className="card"><h2>Báo cáo lương · ${v==='y'?'tất cả các năm':'năm '+yr}</h2>${Object.keys(T).length?Object.keys(T).map(c=>line(c,T[c])):html`<div className="mut">Chưa có khoản lương.</div>`}</div>
+  ${ks.map(k=>html`<div className="card" key=${k}><b>${v==='w'?'Tuần '+fd(k)+' → '+fd(add(k,6)):v==='m'?'Tháng '+k.slice(5)+'/'+k.slice(0,4):'Năm '+k}</b>
+   ${Object.keys(R[k]).map(c=>line(c,R[k][c]))}
+   <div style=${{marginTop:8}}>${SA.filter(t=>inY(t.date)&&key(t.date)===k).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(t=>html`<div className="li" key=${t.id}><div style=${{flex:1,fontSize:13}}>${fd(t.date)} · kỳ ${t.period.slice(5)}/${t.period.slice(0,4)}<div className="mut">${t.note||''}</div></div><b style=${{color:'#34d399'}}>+${fmt(t.amt,t.cur)}</b></div>`)}</div></div>`)}</div>`;
+}
+
+function Settings({S,up}){
+ const[url,setUrl]=useState(''),[bk,setBk]=useState(''),[imp,setImp]=useState(''),[msg,setMsg]=useState(''),[del,setDel]=useState(false);
+ const setBg=bg=>up(s=>({...s,bg}));
+ const onFile=e=>{const fl=e.target.files[0];if(!fl)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);setBg({t:'i',v:c.toDataURL('image/jpeg',.7)})};im.src=r.result};r.readAsDataURL(fl)};
+ const doImp=()=>{try{const o=JSON.parse(imp);up(s=>({...s,...o}));setMsg('Đã khôi phục dữ liệu.');setImp('')}catch(e){setMsg('Dữ liệu không hợp lệ.')}};
+ return html`<div>
+  <div className="card"><h2>Tên hiển thị</h2><input className="in" value=${S.name} onChange=${e=>up(s=>({...s,name:e.target.value||'Mr.Nam'}))}/></div>
+  <div className="card"><h2>Hình nền</h2><div className="g2" style=${{gridTemplateColumns:'repeat(3,1fr)',marginBottom:10}}>
+   ${BGS.map(g=>html`<div key=${g} className=${'sw'+(S.bg.t==='g'&&S.bg.v===g?' on':'')} style=${{background:g}} onClick=${()=>setBg({t:'g',v:g})}></div>`)}</div>
+   <div className="mut">Tải ảnh từ điện thoại</div><input className="in" type="file" accept="image/*" onChange=${onFile}/>
+   <div className="row"><input className="in" placeholder="Dán URL hình nền" value=${url} onChange=${e=>setUrl(e.target.value)}/><button className="btn fit" style=${{marginBottom:8}} onClick=${()=>url.trim()&&setBg({t:'i',v:url.trim()})}>Áp dụng</button></div></div>
+  <div className="card"><h2>Dữ liệu</h2><div className="mut" style=${{marginBottom:8}}>Dữ liệu tự lưu trên trình duyệt này.</div>
+   <button className="btn g" style=${{width:'100%',marginBottom:8}} onClick=${()=>setBk(JSON.stringify({...S,bg:{t:'g',v:BGS[0]}}))}>Tạo bản sao lưu</button>
+   ${bk&&html`<textarea className="in" readOnly value=${bk} onFocus=${e=>e.target.select()}/>`}
+   <textarea className="in" placeholder="Dán bản sao lưu để khôi phục" value=${imp} onChange=${e=>setImp(e.target.value)}/>
+   <button className="btn g" style=${{width:'100%',marginBottom:8}} onClick=${doImp}>Khôi phục</button>
+   <button className=${'btn r'} style=${{width:'100%'}} onClick=${()=>{if(!del){setDel(true);return}try{localStorage.removeItem(KEY)}catch(e){}up(()=>init());setDel(false);setMsg('Đã xóa toàn bộ dữ liệu.')}}>${del?'Bấm lần nữa để XÓA TOÀN BỘ':'Xóa toàn bộ dữ liệu'}</button>
+   ${msg&&html`<div className="mut" style=${{marginTop:8}}>${msg}</div>`}</div></div>`;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+</script></body></html>
